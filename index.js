@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express')
+const Person = require('./models/person')
 const morgan = require('morgan')
-const app = express()
 
+const app = express()
 app.use(express.json())
 
 morgan.token('data', (req, res) => {
@@ -11,93 +13,50 @@ morgan.token('data', (req, res) => {
 })
 
 app.use(morgan(":method :url :status :res[content-length] - :response-time ms :data"))
-
 app.use(express.static('dist'))
 
-let contacts = [
-  { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
+let contacts = []
 
 app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
 })
 
 app.get('/api/persons', (request, response) => {
-    response.json(contacts)
+    Person.find({}).then(people => {
+        response.json(people)
+    })
 })
 
 app.get('/info', (request, response) => {
-    response.send(`
-        <div>Phonebook has info for ${contacts.length} people</div>
-        <div>${new Date()}</div>
-    `)
+    Person.find({}).then(people => {
+        response.send(`
+            <div>Phonebook has info for ${people.length} people</div>
+            <div>${new Date()}</div>
+        `)
+    })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    const contact = contacts.find(contact => contact.id === id)
-
-    if (contact) {
-        response.json(contact)
-    } else {
-        response.status(404).end()
-    }
+    Person.findById(request.params.id).then(person => {
+        response.json(person)
+    })
 })
-
-const genId = () => {
-    const id = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
-
-    if (contacts.find(contact => contact.id === id) === undefined) {
-        return id.toString()
-    } else {
-        return genId().toString()
-    }
-}
 
 app.post('/api/persons', (request, response) => {
     const body = request.body
     
     if (!body.name || !body.number) {
-        return response.status(404).json({
-            error: 'contact info missing'
-        })
+        return response.status(404).json({ error: 'contact info missing' })
     }
 
-    const name = body.name
-    if (contacts.find(contact => contact.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
-        return response.status(404).json({
-            error: 'name must be unique'
-        })
-    }
-
-    const contact = {
+    const person = new Person({
         name: body.name,
         number: body.number,
-        id: genId(),
-    }
+    })
 
-    contacts = contacts.concat(contact)
-
-    return response.json(contact)
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -107,7 +66,7 @@ app.delete('/api/persons/:id', (request, response) => {
     response.status(204).end()
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
