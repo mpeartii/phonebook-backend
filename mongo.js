@@ -16,23 +16,24 @@ const personSchema = new mongoose.Schema({
 const Person = mongoose.model('person', personSchema)
 
 switch (process.argv.length) {
-    case 5: 
-        const person = new Person({ name: process.argv[3], number: process.argv[4],  })
-        person.save().then(result => {
-            console.log(`added ${person.name} number ${person.number} to phonebook`)
-            mongoose.connection.close()
-        })
-        break
-    case 3: 
-        console.log('phonebook:')
-        Person.find({}).then(result => {
-            result.forEach(person => {
-                console.log(person)
-            })
-            mongoose.connection.close()
-        })
-        break
-    default: 
-        console.log('arg(s) error')
-        process.exit(1)
+case 5:
+{ const person = new Person({ name: process.argv[3], number: process.argv[4],  })
+  // eslint-disable-next-line no-unused-vars
+  person.save().then(result => {
+    console.log(`added ${person.name} number ${person.number} to phonebook`)
+    mongoose.connection.close()
+  })
+  break }
+case 3:
+  console.log('phonebook:')
+  Person.find({}).then(result => {
+    result.forEach(person => {
+      console.log(person)
+    })
+    mongoose.connection.close()
+  })
+  break
+default:
+  console.log('arg(s) error')
+  process.exit(1)
 }

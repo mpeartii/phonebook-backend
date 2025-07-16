@@ -6,12 +6,13 @@ const url = process.env.MONGODB_URI
 
 console.log('connecting to', url)
 mongoose.connect(url)
-    .then(result => {
-        console.log('connected to MongoDB')
-    })
-    .catch(error => {
-        console.log('error connecting to MongoDB:', error.message)
-    })
+  // eslint-disable-next-line no-unused-vars
+  .then(result => {
+    console.log('connected to MongoDB')
+  })
+  .catch(error => {
+    console.log('error connecting to MongoDB:', error.message)
+  })
 
 const personSchema = new mongoose.Schema({
   name: {
@@ -23,19 +24,20 @@ const personSchema = new mongoose.Schema({
     type: String,
     minLength: 8,
     validate: {
-        validator: v => /\d{2,3}-\d{7,}/.test(v),
-        message: `Path \`{PATH}\` (\`{VALUE}\') is malformed.`
+      validator: v => /\d{2,3}-\d{7,}/.test(v),
+      // eslint-disable-next-line no-useless-escape
+      message: 'Path \`{PATH}\` (\`{VALUE}\') is malformed.'
     },
     required: true
   }
 })
 
 personSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString()
-        delete returnedObject._id
-        delete returnedObject.__v
-    }
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
 })
 
 module.exports = mongoose.model('person', personSchema)
